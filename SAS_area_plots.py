@@ -1,5 +1,8 @@
 import streamlit as st
-st.set_page_config(page_title="Inertial Motion Unit Data Analysis", layout="wide")
+st.set_page_config(
+    page_title="Inertial Motion Unit Data Analysis", 
+    page_icon=":rocket:",
+    layout="wide")
 
 import pandas as pd
 import numpy as np
