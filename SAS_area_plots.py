@@ -12,7 +12,7 @@ from scipy.integrate import trapezoid
 # =============================================================================
 # Title and Instructions
 # =============================================================================
-st.title("Inertial Motion Unit Data Analysis")
+st.title("Inertial Motion Unit Data Analysis v.110325")
 st.write(
     "Upload exactly 4 Excel (.xlsx) files containing your acquisition data. "
     "Each file must have the time data in column A (starting at A2, with header in A1) "
