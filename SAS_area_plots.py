@@ -1,7 +1,7 @@
 import streamlit as st
 st.set_page_config(
-    page_title="Inertial Motion Unit Data Analysis", 
-    page_icon=":rocket:",
+    page_title="SAS - AUC", 
+    page_icon=":finger:",
     layout="wide")
 
 import pandas as pd
