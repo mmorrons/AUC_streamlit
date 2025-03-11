@@ -170,7 +170,7 @@ if uploaded_files and len(uploaded_files) == 4:
                 # Display Results
                 st.write(f"**Calculated area:** {area:.2f} (θ·sec)")
                 st.write(f"**Time Interval (Δt):** {delta_t:.2f} sec")
-                st.write(f"**Max Velocity:**{max_velocity:.3f} (θ/s")
+                st.write(f"**Max Velocity:** {max_velocity:.3f} (θ/s")
                 #Show Plot
                 st.pyplot(fig)
 else:
