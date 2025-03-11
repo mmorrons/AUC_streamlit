@@ -1,7 +1,7 @@
 import streamlit as st
 st.set_page_config(
     page_title="SAS - AUC", 
-    page_icon="🌚",
+    page_icon="🐼",
     layout="wide")
 
 import pandas as pd
