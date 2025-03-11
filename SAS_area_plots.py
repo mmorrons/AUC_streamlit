@@ -119,22 +119,25 @@ if uploaded_files and len(uploaded_files) == 4:
                 # -------------------------------
                 min_time = float(data['time'].min())
                 max_time = float(data['time'].max())
-                start_time = st.slider(
-                    f"Select Start Time for {graph_title} (sec)",
+
+                start_time = st.number_input(
+                    f"Enter Start Time for {graph_title} (sec)",
                     min_value=min_time,
                     max_value=max_time,
                     value=min_time,
                     step=0.01,
                     key=f"start_time_{index}"
                 )
-                end_time = st.slider(
-                    f"Select End Time for {graph_title} (sec)",
+                
+                end_time = st.number_input(
+                    f"Enter End Time for {graph_title} (sec)",
                     min_value=start_time,
                     max_value=max_time,
                     value=max_time,
                     step=0.01,
                     key=f"end_time_{index}"
                 )
+                
                 baseline = st.number_input(
                     f"Enter Baseline Value for {graph_title}",
                     value=0.0,
@@ -151,18 +154,24 @@ if uploaded_files and len(uploaded_files) == 4:
                 else:
                     area = trapezoid(np.abs(selected_data['theta'] - baseline), x=selected_data['time'])
 
+                delta_t = end_time - start_time  # Calculate Δt
+
                 # -------------------------------
                 # Plotting
                 # -------------------------------
                 fig, ax = plt.subplots(figsize=(10, 6))
-                ax.plot(data['time'], data['theta'], color='blue', label='Theta')
+                ax.plot(data['time'], data['theta'], color='blue', label='θ')
                 ax.axhline(baseline, color='red', linestyle='--', label=f'Baseline: {baseline}')
                 ax.fill_between(selected_data['time'], selected_data['theta'], baseline, color='pink', alpha=0.3, label='Area')
                 ax.set_xlabel("Time (sec)")
-                ax.set_ylabel("Theta Angle")
+                ax.set_ylabel("θ")
                 ax.set_title(graph_title)
                 ax.legend()
-                st.write(f"Calculated area from {start_time:.2f}s to {end_time:.2f}s: {area:.2f} (theta·sec)")
+                # Display Results
+                st.write(f"**Calculated area:** {area:.2f} (θ·sec)")
+                st.write(f"**Time Interval (Δt):** {delta_t:.2f} sec")
+                st.write(f"**Max Velocity:**{max_velocity:.3f} (θ/s")
+                #Show Plot
                 st.pyplot(fig)
 else:
     st.warning("Please upload exactly 4 Excel files to proceed.")
