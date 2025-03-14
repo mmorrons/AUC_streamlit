@@ -6,7 +6,7 @@ from scipy.integrate import trapezoid
 
 # Set up the Streamlit page
 st.set_page_config(page_title="SAS - AUC", page_icon="🐼", layout="wide")
-st.title("SAS - AUC v.110325")
+st.title("SAS - AUC v.140325")
 st.write(
     "Upload exactly 4 Excel (.xlsx) files containing your acquisition data. "
     "Each file must have the time data in column 'Time (s)' and the selected measurement in its respective column. "
