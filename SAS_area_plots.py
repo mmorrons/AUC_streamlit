@@ -127,6 +127,11 @@ if uploaded_files and len(uploaded_files) == 4:
                 )
                 delta_t = end_time - start_time
 
+                                # Display calculated results
+                st.write(f"**Calculated area:** {area:.4f} ({selected_data_type.split(' ')[-1]}·sec)")
+                st.write(f"**Time Interval (Δt):** {delta_t:.2f} sec")
+                st.write(f"**Max Velocity:** {max_velocity:.3f} (θ/s)")
+                
                 # Create an interactive Plotly figure
                 fig = go.Figure()
 
@@ -146,7 +151,7 @@ if uploaded_files and len(uploaded_files) == 4:
                     mode='lines',
                     name=f'Baseline: {baseline}',
                     line=dict(color='red', dash='dash'),
-                    hovertemplate='Time: %{x}<br>Value: %{y}<extra></extra>'
+                    hovertemplate=f'Time: %{x}<br>{select_data_type}: %{y}<extra></extra>'
                 ))
                 # Fill the area between the curve and baseline with 0.4 transparency
                 fig.add_trace(go.Scatter(
@@ -167,7 +172,7 @@ if uploaded_files and len(uploaded_files) == 4:
                     mode='lines',
                     line=dict(color='red'),
                     showlegend=False,
-                    hovertemplate='Start: Time: %{x}<br>Value: %{y}<extra></extra>'
+                    hovertemplate=f'Start: Time: %{x}<br>{select_data_type}: %{y}<extra></extra>'
                 ))
                 fig.add_trace(go.Scatter(
                     x=[end_time, end_time],
@@ -175,7 +180,7 @@ if uploaded_files and len(uploaded_files) == 4:
                     mode='lines',
                     line=dict(color='red'),
                     showlegend=False,
-                    hovertemplate='End: Time: %{x}<br>Value: %{y}<extra></extra>'
+                    hovertemplate=f'End: Time: %{x}<br>{select_data_type}: %{y}<extra></extra>'
                 ))
 
                 # Update layout to set a dark grey background and white font for readability
@@ -188,9 +193,5 @@ if uploaded_files and len(uploaded_files) == 4:
 
                 st.plotly_chart(fig, use_container_width=True)
 
-                # Display calculated results
-                st.write(f"**Calculated area:** {area:.4f} ({selected_data_type.split(' ')[-1]}·sec)")
-                st.write(f"**Time Interval (Δt):** {delta_t:.2f} sec")
-                st.write(f"**Max Velocity:** {max_velocity:.3f} (θ/s)")
 else:
     st.warning("Please upload exactly 4 Excel files to proceed.")
