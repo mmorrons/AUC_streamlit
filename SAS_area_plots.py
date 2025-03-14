@@ -136,7 +136,8 @@ if uploaded_files and len(uploaded_files) == 4:
                     y=data['selected_data'],
                     mode='lines',
                     name=selected_data_type,
-                    line=dict(color='blue')
+                    line=dict(color='blue'),
+                    hovertemplate='Time: %{x}<br>Value: %{y}<extra></extra>'
                 ))
                 # Baseline trace
                 fig.add_trace(go.Scatter(
@@ -144,42 +145,48 @@ if uploaded_files and len(uploaded_files) == 4:
                     y=[baseline, baseline],
                     mode='lines',
                     name=f'Baseline: {baseline}',
-                    line=dict(color='red', dash='dash')
+                    line=dict(color='red', dash='dash'),
+                    hovertemplate='Time: %{x}<br>Value: %{y}<extra></extra>'
                 ))
-                # Fill the area between the curve and baseline
+                # Fill the area between the curve and baseline with 0.4 transparency
                 fig.add_trace(go.Scatter(
                     x=np.concatenate([selected_data['time'], selected_data['time'][::-1]]),
                     y=np.concatenate([selected_data['selected_data'], np.full(len(selected_data), baseline)]),
                     fill='toself',
-                    fillcolor='pink',
+                    fillcolor='rgba(255,192,203,0.4)',
                     line=dict(color='rgba(255,255,255,0)'),
                     showlegend=False,
                     name='Area'
                 ))
-                # Vertical boundary lines at start and end (using interpolated y-values)
+                # Vertical boundary lines at start and end (without legend entries)
                 start_y = np.interp(start_time, data['time'], data['selected_data'])
                 end_y = np.interp(end_time, data['time'], data['selected_data'])
                 fig.add_trace(go.Scatter(
                     x=[start_time, start_time],
                     y=[baseline, start_y],
                     mode='lines',
-                    name='Start boundary',
-                    line=dict(color='red')
+                    line=dict(color='red'),
+                    showlegend=False,
+                    hovertemplate='Start: Time: %{x}<br>Value: %{y}<extra></extra>'
                 ))
                 fig.add_trace(go.Scatter(
                     x=[end_time, end_time],
                     y=[baseline, end_y],
                     mode='lines',
-                    name='End boundary',
-                    line=dict(color='red')
+                    line=dict(color='red'),
+                    showlegend=False,
+                    hovertemplate='End: Time: %{x}<br>Value: %{y}<extra></extra>'
                 ))
 
-                # Update layout to enable interactivity (zoom, pan, reset)
+                # Update layout to set a dark grey background and white font for readability
                 fig.update_layout(
                     title=graph_title,
                     xaxis_title="Time (sec)",
                     yaxis_title=selected_data_type,
-                    hovermode='closest'
+                    hovermode='closest',
+                    plot_bgcolor="#333333",
+                    paper_bgcolor="#333333",
+                    font=dict(color="white")
                 )
 
                 st.plotly_chart(fig, use_container_width=True)
