@@ -146,7 +146,7 @@ if uploaded_files and len(uploaded_files) == 4:
                     x=data['time'],
                     y=data['selected_data'],
                     mode='lines',
-                    name=unit,  # Legend now shows only the unit
+                    name=selected_data_type,
                     line=dict(color='blue'),
                     hovertemplate=f"Time: %{{x}}<br>{unit}: %{{y}}<extra></extra>"
                 ))
