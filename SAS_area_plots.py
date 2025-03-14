@@ -137,6 +137,11 @@ if uploaded_files and len(uploaded_files) == 4:
                     alpha=0.3,
                     label='Area'
                 )
+                
+                # Add vertical red lines at the boundaries of the selected data
+                ax.axvline(x=start_time, color='red', linestyle='-', linewidth=2, label='Start boundary')
+                ax.axvline(x=end_time, color='red', linestyle='-', linewidth=2, label='End boundary')
+                
                 ax.set_xlabel("Time (sec)")
                 ax.set_ylabel(selected_data_type)
                 ax.set_title(graph_title)
