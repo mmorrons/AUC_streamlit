@@ -148,7 +148,7 @@ if uploaded_files and len(uploaded_files) == 4:
                     mode='lines',
                     name=unit,  # Legend now shows only the unit
                     line=dict(color='blue'),
-                    hovertemplate=f"Time: %{{x}}<br>{selected_data_type}: %{{y}}<extra></extra>"
+                    hovertemplate=f"Time: %{{x}}<br>{unit}: %{{y}}<extra></extra>"
                 ))
                 # Baseline trace
                 fig.add_trace(go.Scatter(
@@ -157,7 +157,7 @@ if uploaded_files and len(uploaded_files) == 4:
                     mode='lines',
                     name=f'Baseline: {baseline}',
                     line=dict(color='red', dash='dash'),
-                    hovertemplate=f"Time: %{{x}}<br>{selected_data_type}: %{{y}}<extra></extra>"
+                    hovertemplate=f"Time: %{{x}}<br>{unit}: %{{y}}<extra></extra>"
                 ))
                 # Fill the area between the curve and baseline with 0.4 transparency
                 fig.add_trace(go.Scatter(
@@ -178,7 +178,7 @@ if uploaded_files and len(uploaded_files) == 4:
                     mode='lines',
                     line=dict(color='red'),
                     showlegend=False,
-                    hovertemplate=f"StartTime: %{{x}}<br>{selected_data_type}: %{{y}}<extra></extra>"
+                    hovertemplate=f"StartTime: %{{x}}<br>{unit}: %{{y}}<extra></extra>"
                 ))
                 fig.add_trace(go.Scatter(
                     x=[end_time, end_time],
@@ -186,7 +186,7 @@ if uploaded_files and len(uploaded_files) == 4:
                     mode='lines',
                     line=dict(color='red'),
                     showlegend=False,
-                    hovertemplate=f"End Time: %{{x}}<br>{selected_data_type}: %{{y}}<extra></extra>"
+                    hovertemplate=f"End Time: %{{x}}<br>{unit}: %{{y}}<extra></extra>"
                 ))
 
                 # Update layout to set a dark grey background and white font for readability
