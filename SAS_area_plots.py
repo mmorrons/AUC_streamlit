@@ -127,22 +127,28 @@ if uploaded_files and len(uploaded_files) == 4:
                 )
                 delta_t = end_time - start_time
 
-                                # Display calculated results
+                # Display calculated results
                 st.write(f"**Calculated area:** {area:.4f} ({selected_data_type.split(' ')[-1]}·sec)")
                 st.write(f"**Time Interval (Δt):** {delta_t:.2f} sec")
                 st.write(f"**Max Velocity:** {max_velocity:.3f} (θ/s)")
                 
+                # Extract unit from the selected data type for the legend
+                if "(" in selected_data_type and ")" in selected_data_type:
+                    unit = selected_data_type.split("(")[1].split(")")[0]
+                else:
+                    unit = selected_data_type
+
                 # Create an interactive Plotly figure
                 fig = go.Figure()
 
-                # Main data trace
+                # Main data trace using only the unit for the legend label
                 fig.add_trace(go.Scatter(
                     x=data['time'],
                     y=data['selected_data'],
                     mode='lines',
-                    name=selected_data_type,
+                    name=unit,  # Legend now shows only the unit
                     line=dict(color='blue'),
-                    hovertemplate='Time: %{x}<br>Value: %{y}<extra></extra>'
+                    hovertemplate=f"Time: %{{x}}<br>{selected_data_type}: %{{y}}<extra></extra>"
                 ))
                 # Baseline trace
                 fig.add_trace(go.Scatter(
@@ -159,7 +165,7 @@ if uploaded_files and len(uploaded_files) == 4:
                     y=np.concatenate([selected_data['selected_data'], np.full(len(selected_data), baseline)]),
                     fill='toself',
                     fillcolor='rgba(255, 178, 178, 0.34)',
-                    line=dict(color='black'),
+                    line=dict(color='red'),
                     showlegend=False,
                     name='Area'
                 ))
@@ -196,7 +202,6 @@ if uploaded_files and len(uploaded_files) == 4:
                     yaxis_title=selected_data_type,
                     hovermode='closest'
                 )
-
 
                 st.plotly_chart(fig, use_container_width=True)
 
