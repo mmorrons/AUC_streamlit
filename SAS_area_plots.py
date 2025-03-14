@@ -1,9 +1,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import plotly.graph_objects as go
 from scipy.integrate import trapezoid
-from bokeh.plotting import figure
-from bokeh.models import Span, ColumnDataSource, HoverTool
 
 # Set up the Streamlit page
 st.set_page_config(page_title="SAS - AUC", page_icon="🐼", layout="wide")
@@ -30,7 +29,7 @@ data_options = {
 }
 
 if uploaded_files and len(uploaded_files) == 4:
-    # Process files in a 2x2 grid layout
+    # Process files in a 2x2 grid
     for row in range(2):
         cols = st.columns(2)
         for col in range(2):
@@ -39,8 +38,9 @@ if uploaded_files and len(uploaded_files) == 4:
             with cols[col]:
                 file_name = file.name
                 base_name = file_name.replace(".xlsx", "").replace(".XLSX", "")
+                # Extract metadata from the filename
                 condition = "Non Spastic" if "NonSpastic" in base_name else "Spastic"
-                measurement = "Instant ReTest" if "InstantReTest" in base_name else "Post" if "PostIntervention" in base_name else "Pre"
+                measurement = "Instant Retest" if "InstantReTest" in base_name else "Post" if "PostIntervention" in base_name else "Pre"
                 number = base_name.split("_")[-1]
                 graph_title = f"{measurement} n°{number} {condition}".strip()
                 st.subheader(graph_title)
@@ -61,7 +61,7 @@ if uploaded_files and len(uploaded_files) == 4:
                     if value in df_columns
                 }
                 
-                # Get max velocity from cell V8 (row index 7, column index 21)
+                # Hard-coded reading: get max velocity from cell V8 (row index 7, column index 21)
                 file.seek(0)
                 df_full = pd.read_excel(file, header=None)
                 max_velocity = df_full.iloc[7, 21]
@@ -113,46 +113,74 @@ if uploaded_files and len(uploaded_files) == 4:
                     key=f"baseline_{index}"
                 )
                 
-                # Filter data within the selected time interval and calculate area
+                # Filter data within selected time interval and calculate area
                 mask = (data['time'] >= start_time) & (data['time'] <= end_time)
                 selected_data = data[mask]
                 area = trapezoid(np.abs(selected_data['selected_data'] - baseline), x=selected_data['time']) if len(selected_data) >= 2 else 0
                 delta_t = end_time - start_time
                 
-                # Create a Bokeh figure with interactive tools (reverting to default background)
-                p = figure(
+                # Create an interactive Plotly figure
+                fig = go.Figure()
+                
+                # Main data trace with hover info
+                fig.add_trace(go.Scatter(
+                    x=data['time'],
+                    y=data['selected_data'],
+                    mode='lines',
+                    name=selected_data_type,
+                    line=dict(color='blue', width=0.5),
+                    hovertemplate='Time: %{x}<br>Value: %{y}<extra></extra>'
+                ))
+                # Baseline trace
+                fig.add_trace(go.Scatter(
+                    x=[data['time'].min(), data['time'].max()],
+                    y=[baseline, baseline],
+                    mode='lines',
+                    name=f'Baseline: {baseline}',
+                    line=dict(color='red', dash='dash', width=0.5),
+                    hovertemplate='Time: %{x}<br>Value: %{y}<extra></extra>'
+                ))
+                # Fill area between the curve and baseline
+                fig.add_trace(go.Scatter(
+                    x=np.concatenate([selected_data['time'], selected_data['time'][::-1]]),
+                    y=np.concatenate([selected_data['selected_data'], np.full(len(selected_data), baseline)]),
+                    fill='toself',
+                    fillcolor='pink',
+                    line=dict(color='rgba(255,255,255,0)'),
+                    showlegend=False,
+                    name='Area'
+                ))
+                # Vertical boundary lines without legend entries
+                start_y = np.interp(start_time, data['time'], data['selected_data'])
+                end_y = np.interp(end_time, data['time'], data['selected_data'])
+                fig.add_trace(go.Scatter(
+                    x=[start_time, start_time],
+                    y=[baseline, start_y],
+                    mode='lines',
+                    name='',
+                    line=dict(color='red', width=0.5),
+                    hovertemplate='Start: Time: %{x}<br>Value: %{y}<extra></extra>',
+                    showlegend=False
+                ))
+                fig.add_trace(go.Scatter(
+                    x=[end_time, end_time],
+                    y=[baseline, end_y],
+                    mode='lines',
+                    name='',
+                    line=dict(color='red', width=0.5),
+                    hovertemplate='End: Time: %{x}<br>Value: %{y}<extra></extra>',
+                    showlegend=False
+                ))
+                
+                # Update layout: reverting to default background settings
+                fig.update_layout(
                     title=graph_title,
-                    x_axis_label="Time (sec)",
-                    y_axis_label=selected_data_type,
-                    tools="pan,wheel_zoom,box_zoom,reset,save",
-                    width=800, height=500
+                    xaxis_title="Time (sec)",
+                    yaxis_title=selected_data_type,
+                    hovermode='closest'
                 )
                 
-                # Use a ColumnDataSource for hover functionality
-                source = ColumnDataSource(data)
-                p.line('time', 'selected_data', source=source, line_width=0.5, color='blue', legend_label=selected_data_type)
-                
-                # Plot the baseline
-                p.line(
-                    [data['time'].min(), data['time'].max()],
-                    [baseline, baseline],
-                    line_width=0.5,
-                    color='red',
-                    line_dash='dashed',
-                    legend_label=f'Baseline: {baseline}'
-                )
-                
-                # Add a hover tool to display x and y values from the main line
-                hover = HoverTool(tooltips=[("Time", "@time"), ("Value", "@selected_data")])
-                p.add_tools(hover)
-                
-                # Add vertical spans for the start and end boundaries (no legend entries)
-                start_span = Span(location=start_time, dimension='height', line_color='red', line_width=0.5)
-                end_span = Span(location=end_time, dimension='height', line_color='red', line_width=0.5)
-                p.add_layout(start_span)
-                p.add_layout(end_span)
-                
-                st.bokeh_chart(p, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True)
                 
                 # Display calculated results
                 st.write(f"**Calculated area:** {area:.4f} ({selected_data_type.split(' ')[-1]}·sec)")
