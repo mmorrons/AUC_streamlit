@@ -153,8 +153,8 @@ if uploaded_files and len(uploaded_files) == 4:
                     x=np.concatenate([selected_data['time'], selected_data['time'][::-1]]),
                     y=np.concatenate([selected_data['selected_data'], np.full(len(selected_data), baseline)]),
                     fill='toself',
-                    fillcolor='rgba(255,192,203,0.4)',
-                    line=dict(color='rgba(255,255,255,0)'),
+                    fillcolor='rgba(255, 178, 178, 0.34)',
+                    line=dict(color='black'),
                     showlegend=False,
                     name='Area'
                 ))
@@ -184,9 +184,9 @@ if uploaded_files and len(uploaded_files) == 4:
                     xaxis_title="Time (sec)",
                     yaxis_title=selected_data_type,
                     hovermode='closest',
-                    plot_bgcolor="#333333",
-                    paper_bgcolor="#333333",
-                    font=dict(color="white")
+                    plot_bgcolor="white",
+                    paper_bgcolor="white",
+                    font=dict(color="black")
                 )
 
                 st.plotly_chart(fig, use_container_width=True)
