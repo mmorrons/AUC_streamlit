@@ -185,11 +185,18 @@ if uploaded_files and len(uploaded_files) == 4:
 
                 # Update layout to set a dark grey background and white font for readability
                 fig.update_layout(
+                    legend=dict(
+                        x=0.95,
+                        y=0.95,
+                        xanchor='right',
+                        yanchor='top'
+                    ),
                     title=graph_title,
                     xaxis_title="Time (sec)",
                     yaxis_title=selected_data_type,
-                    hovermode='closest',
+                    hovermode='closest'
                 )
+
 
                 st.plotly_chart(fig, use_container_width=True)
 
