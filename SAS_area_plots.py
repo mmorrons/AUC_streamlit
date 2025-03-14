@@ -29,7 +29,7 @@ data_options = {
 }
 
 if uploaded_files and len(uploaded_files) == 4:
-    # Process files in a 2x2 grid
+    # Process each file and display its graph in a grid (2 columns x 2 rows)
     for row in range(2):
         cols = st.columns(2)
         for col in range(2):
@@ -38,14 +38,19 @@ if uploaded_files and len(uploaded_files) == 4:
             with cols[col]:
                 file_name = file.name
                 base_name = file_name.replace(".xlsx", "").replace(".XLSX", "")
-                # Extract metadata from the filename
+
+                # Extract metadata from the file name
                 condition = "Non Spastic" if "NonSpastic" in base_name else "Spastic"
-                measurement = "Instant Retest" if "InstantReTest" in base_name else "Post" if "PostIntervention" in base_name else "Pre"
+                measurement = (
+                    "Instant Retest" if "InstantReTest" in base_name
+                    else "Post" if "PostIntervention" in base_name
+                    else "Pre"
+                )
                 number = base_name.split("_")[-1]
                 graph_title = f"{measurement} n°{number} {condition}".strip()
                 st.subheader(graph_title)
-                
-                # Read header row to determine columns
+
+                # Read first row to determine column names
                 file.seek(0)
                 df_temp = pd.read_excel(file, nrows=1)
                 df_columns = {}
@@ -53,15 +58,15 @@ if uploaded_files and len(uploaded_files) == 4:
                     clean_col = str(col_name).split('.')[0].strip()
                     if clean_col not in df_columns:
                         df_columns[clean_col] = col_name
-                        
-                # Adjust data options based on file columns
+
+                # Adjust the data options based on the file's columns
                 corrected_data_options = {
                     key: df_columns.get(value, value)
                     for key, value in data_options.items()
                     if value in df_columns
                 }
-                
-                # Hard-coded reading: get max velocity from cell V8 (row index 7, column index 21)
+
+                # Read the file to get max velocity from cell V8 (row index 7, column index 21)
                 file.seek(0)
                 df_full = pd.read_excel(file, header=None)
                 max_velocity = df_full.iloc[7, 21]
@@ -69,7 +74,7 @@ if uploaded_files and len(uploaded_files) == 4:
                     f"<p style='color: red; font-weight: bold;'>Max Velocity: {max_velocity}</p>",
                     unsafe_allow_html=True
                 )
-                
+
                 # Let user select the measurement type
                 selected_data_type = st.selectbox(
                     f"Select Data for {graph_title}",
@@ -77,8 +82,8 @@ if uploaded_files and len(uploaded_files) == 4:
                     key=f"data_type_{index}"
                 )
                 selected_column = corrected_data_options[selected_data_type]
-                
-                # Read and process data
+
+                # Read and process data columns
                 file.seek(0)
                 time_column = df_columns.get("Time (s)", "Time (s)")
                 selected_column_corrected = df_columns.get(selected_column, selected_column)
@@ -88,7 +93,7 @@ if uploaded_files and len(uploaded_files) == 4:
                 data['time'] = pd.to_numeric(data['time'], errors='coerce')
                 data['selected_data'] = pd.to_numeric(data['selected_data'], errors='coerce')
                 data = data.dropna()
-                
+
                 # User input for time interval and baseline
                 min_time, max_time = data['time'].min(), data['time'].max()
                 start_time = st.number_input(
@@ -112,24 +117,26 @@ if uploaded_files and len(uploaded_files) == 4:
                     value=0.0,
                     key=f"baseline_{index}"
                 )
-                
-                # Filter data within selected time interval and calculate area
+
+                # Filter data for the selected time interval and calculate area under the curve
                 mask = (data['time'] >= start_time) & (data['time'] <= end_time)
                 selected_data = data[mask]
-                area = trapezoid(np.abs(selected_data['selected_data'] - baseline), x=selected_data['time']) if len(selected_data) >= 2 else 0
+                area = (
+                    trapezoid(np.abs(selected_data['selected_data'] - baseline), x=selected_data['time'])
+                    if len(selected_data) >= 2 else 0
+                )
                 delta_t = end_time - start_time
-                
+
                 # Create an interactive Plotly figure
                 fig = go.Figure()
-                
-                # Main data trace with hover info
+
+                # Main data trace
                 fig.add_trace(go.Scatter(
                     x=data['time'],
                     y=data['selected_data'],
                     mode='lines',
                     name=selected_data_type,
-                    line=dict(color='blue', width=0.5),
-                    hovertemplate='Time: %{x}<br>Value: %{y}<extra></extra>'
+                    line=dict(color='blue')
                 ))
                 # Baseline trace
                 fig.add_trace(go.Scatter(
@@ -137,10 +144,9 @@ if uploaded_files and len(uploaded_files) == 4:
                     y=[baseline, baseline],
                     mode='lines',
                     name=f'Baseline: {baseline}',
-                    line=dict(color='red', dash='dash', width=0.5),
-                    hovertemplate='Time: %{x}<br>Value: %{y}<extra></extra>'
+                    line=dict(color='red', dash='dash')
                 ))
-                # Fill area between the curve and baseline
+                # Fill the area between the curve and baseline
                 fig.add_trace(go.Scatter(
                     x=np.concatenate([selected_data['time'], selected_data['time'][::-1]]),
                     y=np.concatenate([selected_data['selected_data'], np.full(len(selected_data), baseline)]),
@@ -150,38 +156,34 @@ if uploaded_files and len(uploaded_files) == 4:
                     showlegend=False,
                     name='Area'
                 ))
-                # Vertical boundary lines without legend entries
+                # Vertical boundary lines at start and end (using interpolated y-values)
                 start_y = np.interp(start_time, data['time'], data['selected_data'])
                 end_y = np.interp(end_time, data['time'], data['selected_data'])
                 fig.add_trace(go.Scatter(
                     x=[start_time, start_time],
                     y=[baseline, start_y],
                     mode='lines',
-                    name='',
-                    line=dict(color='red', width=0.5),
-                    hovertemplate='Start: Time: %{x}<br>Value: %{y}<extra></extra>',
-                    showlegend=False
+                    name='Start boundary',
+                    line=dict(color='red')
                 ))
                 fig.add_trace(go.Scatter(
                     x=[end_time, end_time],
                     y=[baseline, end_y],
                     mode='lines',
-                    name='',
-                    line=dict(color='red', width=0.5),
-                    hovertemplate='End: Time: %{x}<br>Value: %{y}<extra></extra>',
-                    showlegend=False
+                    name='End boundary',
+                    line=dict(color='red')
                 ))
-                
-                # Update layout: reverting to default background settings
+
+                # Update layout to enable interactivity (zoom, pan, reset)
                 fig.update_layout(
                     title=graph_title,
                     xaxis_title="Time (sec)",
                     yaxis_title=selected_data_type,
                     hovermode='closest'
                 )
-                
+
                 st.plotly_chart(fig, use_container_width=True)
-                
+
                 # Display calculated results
                 st.write(f"**Calculated area:** {area:.4f} ({selected_data_type.split(' ')[-1]}·sec)")
                 st.write(f"**Time Interval (Δt):** {delta_t:.2f} sec")
