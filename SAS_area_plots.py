@@ -129,8 +129,7 @@ if uploaded_files and len(uploaded_files) == 4:
                 fig, ax = plt.subplots(figsize=(10, 6))
                 ax.plot(data['time'], data['selected_data'], color='blue', label=selected_data_type)
                 ax.axhline(baseline, color='red', linestyle='--', label=f'Baseline: {baseline}')
-                ax.fill(color='red', alpha=0.5)
-                ax.fill_between(
+                ax.fill_betweenx(
                     selected_data['time'],
                     selected_data['selected_data'],
                     baseline,
