@@ -185,7 +185,6 @@ if uploaded_files and len(uploaded_files) == 4:
                     yaxis_title=selected_data_type,
                     hovermode='closest',
                     plot_bgcolor="white",
-                    paper_bgcolor="white",
                     font=dict(color="black")
                 )
 
