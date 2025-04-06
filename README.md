@@ -1,2 +1,3 @@
 # AUC_streamlit
-AUC analysis for SAS
+
+Data Analysis for SAS - Smart Assessment of Spasticity
